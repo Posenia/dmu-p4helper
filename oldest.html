@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>絶妖星乱舞 P4 ヘルパー 完全版</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 16px;
+    padding-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 { font-size: 1.3rem; color: #e94560; margin-bottom: 4px; text-align: center; }
+  .sub { font-size: 0.8rem; color: #aaa; margin-bottom: 16px; text-align: center; }
+  .card {
+    background: #16213e;
+    border-radius: 14px;
+    padding: 14px;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 12px;
+  }
+  .label { font-size: 0.9rem; margin-bottom: 10px; color: #a0aec0; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    flex: 1;
+    min-width: 70px;
+    padding: 12px 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  button:active { transform: scale(0.95); }
+  button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .btn-true { background: #2ecc71; color: #fff; }
+  .btn-false { background: #e74c3c; color: #fff; }
+  .btn-debuff { background: #3498db; color: #fff; }
+  .btn-true.active, .btn-false.active, .btn-debuff.active {
+    box-shadow: 0 0 0 3px #fff;
+  }
+  .result-box {
+    margin-top: 10px;
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    background: #34495e;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.4;
+  }
+  .result-box.green { background: #27ae60; }
+  .result-box.orange { background: #e67e22; }
+  .result-box.blue { background: #2980b9; }
+  .result-box.purple { background: #9b59b6; }
+  .section-title {
+    font-size: 1.15rem;
+    color: #e94560;
+    margin: 24px 0 10px;
+    text-align: center;
+    font-weight: bold;
+  }
+  .reset {
+    margin: 20px 0;
+    background: #555;
+    color: #fff;
+    padding: 12px 36px;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+  <h1>絶妖星乱舞 P4 ヘルパー</h1>
+  <div class="sub">デバフ対応表 + マジックアウト計算</div>
+
+  <!-- ========== 1回目 ========== -->
+  <div class="section-title">1回目</div>
+  <div class="card">
+    <div class="label">真偽を選択</div>
+    <div class="btn-row">
+      <button class="btn-true" id="r1-true" onclick="setRound1(true)">真</button>
+      <button class="btn-false" id="r1-false" onclick="setRound1(false)">偽</button>
+    </div>
+
+    <div class="label" style="margin-top:12px;">視線</div>
+    <div id="r1-gaze" class="result-box">未選択</div>
+
+    <div class="label" style="margin-top:12px;">デバフを選択（複数可）</div>
+    <div class="btn-row">
+      <button class="btn-debuff" id="r1-water" onclick="toggleR1('water')">水</button>
+      <button class="btn-debuff" id="r1-thunder" onclick="toggleR1('thunder')">雷</button>
+      <button class="btn-debuff" id="r1-accel" onclick="toggleR1('accel')">加速度</button>
+    </div>
+    <div id="r1-result" class="result-box">ここに結果</div>
+  </div>
+
+  <!-- ========== 2回目 ========== -->
+  <div class="section-title">2回目</div>
+  <div class="card">
+    <div class="label">真偽を選択</div>
+    <div class="btn-row">
+      <button class="btn-true" id="r2-true" onclick="setRound2(true)">真</button>
+      <button class="btn-false" id="r2-false" onclick="setRound2(false)">偽</button>
+    </div>
+
+    <div class="label" style="margin-top:12px;">視線</div>
+    <div id="r2-gaze" class="result-box">未選択</div>
+
+    <div class="label" style="margin-top:12px;">デバフを選択（複数可）</div>
+    <div class="btn-row">
+      <button class="btn-debuff" id="r2-water" onclick="toggleR2('water')">水</button>
+      <button class="btn-debuff" id="r2-thunder" onclick="toggleR2('thunder')">雷</button>
+      <button class="btn-debuff" id="r2-accel" onclick="toggleR2('accel')">加速度</button>
+    </div>
+    <div id="r2-result" class="result-box">ここに結果</div>
+  </div>
+
+  <!-- ========== ほのお ========== -->
+  <div class="section-title">ほのお</div>
+  <div class="card">
+    <div class="btn-row">
+      <button class="btn-true" id="fire-true" onclick="setFire(true)">真</button>
+      <button class="btn-false" id="fire-false" onclick="setFire(false)">偽</button>
+    </div>
+    <div id="fire-result" class="result-box">未選択</div>
+  </div>
+
+  <!-- ========== つなみ ========== -->
+  <div class="section-title">つなみ</div>
+  <div class="card">
+    <div class="btn-row">
+      <button class="btn-true" id="tsunami-true" onclick="setTsunami(true)">真</button>
+      <button class="btn-false" id="tsunami-false" onclick="setTsunami(false)">偽</button>
+    </div>
+    <div id="tsunami-result" class="result-box">未選択</div>
+  </div>
+
+  <!-- ========== マジックアウト計算 ========== -->
+  <div class="section-title">マジックアウト計算</div>
+
+  <div class="card">
+    <div class="label">① もりもりサンダガ</div>
+    <div class="btn-row">
+      <button class="btn-true" id="sanda-true" onclick="setSanda(true)">踏まない</button>
+      <button class="btn-false" id="sanda-false" onclick="setSanda(false)">踏む</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">② ひろげるブリザガ</div>
+    <div class="btn-row">
+      <button class="btn-true" id="bliz-true" onclick="setBliz(true)">踏まない</button>
+      <button class="btn-false" id="bliz-false" onclick="setBliz(false)">踏む</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">③ マジックアウト①</div>
+    <div class="btn-row">
+      <button class="btn-true" id="out1-true" onclick="setOut1(true)">本当</button>
+      <button class="btn-false" id="out1-false" onclick="setOut1(false)">嘘</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">④ マジックアウト②</div>
+    <div class="btn-row">
+      <button class="btn-true" id="out2-true" onclick="setOut2(true)">本当</button>
+      <button class="btn-false" id="out2-false" onclick="setOut2(false)">嘘</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">結果①（線）</div>
+    <div id="result1" class="result-box">未設定</div>
+  </div>
+
+  <div class="card">
+    <div class="label">結果②（扇）</div>
+    <div id="result2" class="result-box">未設定</div>
+  </div>
+
+  <div class="card">
+    <div class="label">総合結果</div>
+    <div id="resultBoth" class="result-box">未設定</div>
+  </div>
+
+  <button class="reset" onclick="location.reload()">全体リセット</button>
+
+<script>
+  // ===== マジックアウト計算 =====
+  let sanda = null, bliz = null, out1 = null, out2 = null;
+  let tsunamiTrue = null; // true=中で, false=離れて
+
+  function setSanda(val) {
+    sanda = val;
+    document.getElementById('sanda-true').classList.toggle('active', val === true);
+    document.getElementById('sanda-false').classList.toggle('active', val === false);
+    calcMagic();
+  }
+  function setBliz(val) {
+    bliz = val;
+    document.getElementById('bliz-true').classList.toggle('active', val === true);
+    document.getElementById('bliz-false').classList.toggle('active', val === false);
+    calcMagic();
+  }
+  function setOut1(val) {
+    out1 = val;
+    document.getElementById('out1-true').classList.toggle('active', val === true);
+    document.getElementById('out1-false').classList.toggle('active', val === false);
+    calcMagic();
+  }
+  function setOut2(val) {
+    out2 = val;
+    document.getElementById('out2-true').classList.toggle('active', val === true);
+    document.getElementById('out2-false').classList.toggle('active', val === false);
+    calcMagic();
+  }
+
+  function calcMagic() {
+    const res1 = document.getElementById('result1');
+    let r1 = null; // true=踏まない, false=線を踏む
+    if (sanda === null || out1 === null) {
+      res1.textContent = '未設定';
+      res1.className = 'result-box';
+    } else if (sanda === out1) {
+      res1.textContent = '踏まない';
+      res1.className = 'result-box green';
+      r1 = true;
+    } else {
+      res1.textContent = '線を踏む';
+      res1.className = 'result-box orange';
+      r1 = false;
+    }
+
+    const res2 = document.getElementById('result2');
+    let r2 = null; // true=踏まない, false=扇を踏む
+    if (bliz === null || out2 === null) {
+      res2.textContent = '未設定';
+      res2.className = 'result-box';
+    } else if (bliz === out2) {
+      res2.textContent = '踏まない';
+      res2.className = 'result-box green';
+      r2 = true;
+    } else {
+      res2.textContent = '扇を踏む';
+      res2.className = 'result-box orange';
+      r2 = false;
+    }
+
+    const resBoth = document.getElementById('resultBoth');
+    if (r1 === null || r2 === null) {
+      resBoth.textContent = '未設定';
+      resBoth.className = 'result-box';
+      return;
+    }
+
+    let base = '';
+    if (r1 && r2) {
+      base = '踏まない';
+      resBoth.className = 'result-box green';
+    } else if (!r1 && !r2) {
+      base = '両方踏む';
+      resBoth.className = 'result-box purple';
+    } else if (!r1 && r2) {
+      base = '線だけ踏む';
+      resBoth.className = 'result-box orange';
+    } else if (r1 && !r2) {
+      base = '扇だけ踏む';
+      resBoth.className = 'result-box orange';
+    }
+
+    // つなみの状態を先頭に追加
+    if (tsunamiTrue === true) {
+      resBoth.textContent = '中で' + base;
+    } else if (tsunamiTrue === false) {
+      resBoth.textContent = '離れて' + base;
+    } else {
+      resBoth.textContent = base;
+    }
+  }
+
+  // ===== 1回目 =====
+  let r1True = null;
+  let r1Selected = { water: false, thunder: false, accel: false };
+
+  function setRound1(isTrue) {
+    r1True = isTrue;
+    document.getElementById('r1-true').classList.toggle('active', isTrue);
+    document.getElementById('r1-false').classList.toggle('active', !isTrue);
+    
+    const gaze = document.getElementById('r1-gaze');
+    if (isTrue) {
+      gaze.textContent = '早みない';
+      gaze.className = 'result-box green';
+    } else {
+      gaze.textContent = '早みる';
+      gaze.className = 'result-box orange';
+    }
+    updateR1Result();
+  }
+
+  function toggleR1(type) {
+    if (type === 'water' || type === 'thunder') {
+      r1Selected.water = false;
+      r1Selected.thunder = false;
+      r1Selected[type] = !r1Selected[type];
+      const hasWaterOrThunder = r1Selected.water || r1Selected.thunder;
+      document.getElementById('r2-water').disabled = hasWaterOrThunder;
+      document.getElementById('r2-thunder').disabled = hasWaterOrThunder;
+      if (hasWaterOrThunder) {
+        r2Selected.water = false;
+        r2Selected.thunder = false;
+        document.getElementById('r2-water').classList.remove('active');
+        document.getElementById('r2-thunder').classList.remove('active');
+        updateR2Result();
+      }
+    } else {
+      r1Selected.accel = !r1Selected.accel;
+    }
+    document.getElementById('r1-water').classList.toggle('active', r1Selected.water);
+    document.getElementById('r1-thunder').classList.toggle('active', r1Selected.thunder);
+    document.getElementById('r1-accel').classList.toggle('active', r1Selected.accel);
+    updateR1Result();
+  }
+
+  function updateR1Result() {
+    let texts = [];
+    if (r1Selected.water) texts.push(r1True === true ? '頭割り' : r1True === false ? '散開' : '水(?)');
+    if (r1Selected.thunder) texts.push(r1True === true ? '散開' : r1True === false ? '頭割り' : '雷(?)');
+    if (r1Selected.accel) texts.push(r1True === true ? '止まる' : r1True === false ? '動く' : '加速度(?)');
+
+    const box = document.getElementById('r1-result');
+    if (texts.length === 0) {
+      box.textContent = 'デバフを選択';
+      box.className = 'result-box';
+    } else {
+      box.textContent = texts.join(' ＋ ');
+      box.className = 'result-box blue';
+    }
+  }
+
+  // ===== 2回目 =====
+  let r2True = null;
+  let r2Selected = { water: false, thunder: false, accel: false };
+
+  function setRound2(isTrue) {
+    r2True = isTrue;
+    document.getElementById('r2-true').classList.toggle('active', isTrue);
+    document.getElementById('r2-false').classList.toggle('active', !isTrue);
+    
+    const gaze = document.getElementById('r2-gaze');
+    if (isTrue) {
+      gaze.textContent = '遅みない';
+      gaze.className = 'result-box green';
+    } else {
+      gaze.textContent = '遅みる';
+      gaze.className = 'result-box orange';
+    }
+    updateR2Result();
+  }
+
+  function toggleR2(type) {
+    if (type === 'water' || type === 'thunder') {
+      r2Selected.water = false;
+      r2Selected.thunder = false;
+      r2Selected[type] = !r2Selected[type];
+      const hasWaterOrThunder = r2Selected.water || r2Selected.thunder;
+      document.getElementById('r1-water').disabled = hasWaterOrThunder;
+      document.getElementById('r1-thunder').disabled = hasWaterOrThunder;
+      if (hasWaterOrThunder) {
+        r1Selected.water = false;
+        r1Selected.thunder = false;
+        document.getElementById('r1-water').classList.remove('active');
+        document.getElementById('r1-thunder').classList.remove('active');
+        updateR1Result();
+      }
+    } else {
+      r2Selected.accel = !r2Selected.accel;
+    }
+    document.getElementById('r2-water').classList.toggle('active', r2Selected.water);
+    document.getElementById('r2-thunder').classList.toggle('active', r2Selected.thunder);
+    document.getElementById('r2-accel').classList.toggle('active', r2Selected.accel);
+    updateR2Result();
+  }
+
+  function updateR2Result() {
+    let texts = [];
+    if (r2Selected.water) texts.push(r2True === true ? '頭割り' : r2True === false ? '散開' : '水(?)');
+    if (r2Selected.thunder) texts.push(r2True === true ? '散開' : r2True === false ? '頭割り' : '雷(?)');
+    if (r2Selected.accel) texts.push(r2True === true ? '止まる' : r2True === false ? '動く' : '加速度(?)');
+
+    const box = document.getElementById('r2-result');
+    if (texts.length === 0) {
+      box.textContent = 'デバフを選択';
+      box.className = 'result-box';
+    } else {
+      box.textContent = texts.join(' ＋ ');
+      box.className = 'result-box blue';
+    }
+  }
+
+  // ===== ほのお・つなみ =====
+  function setFire(isTrue) {
+    document.getElementById('fire-true').classList.toggle('active', isTrue);
+    document.getElementById('fire-false').classList.toggle('active', !isTrue);
+    const box = document.getElementById('fire-result');
+    box.textContent = isTrue ? '離れる' : 'そのまま';
+    box.className = isTrue ? 'result-box orange' : 'result-box green';
+  }
+
+  function setTsunami(isTrue) {
+    tsunamiTrue = isTrue;
+    document.getElementById('tsunami-true').classList.toggle('active', isTrue);
+    document.getElementById('tsunami-false').classList.toggle('active', !isTrue);
+    const box = document.getElementById('tsunami-result');
+    box.textContent = isTrue ? 'そのまま' : '離れる';
+    box.className = isTrue ? 'result-box green' : 'result-box orange';
+    // マジックアウトの総合結果も更新
+    calcMagic();
+  }
+</script>
+</body>
+</html>
